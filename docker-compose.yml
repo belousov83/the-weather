@@ -1,0 +1,60 @@
+services:
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: weather_backend
+    container_name: weather_backend
+    volumes:
+      - weather_static:/app/static
+      - weather_media:/app/media
+    expose:
+      - "8123"
+    env_file:
+      - .env
+    command: sh -c "python manage.py collectstatic --no-input &&
+      python manage.py makemigrations &&
+      python manage.py migrate &&
+      python -m gunicorn weather_forecast.wsgi -b 0.0.0.0:8123"
+    restart: always
+    depends_on:
+      - postgres
+
+  nginx:
+    restart: always
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: weather_nginx
+    container_name: weather_nginx
+    ports:
+      - "88:88"
+    volumes:
+      - weather_static:/app/static
+      - weather_media:/app/media
+      - weather_fixtures:/app/fixtures
+    depends_on:
+      - django
+
+  postgres:
+      image: "postgres"
+      restart: always
+      container_name: postgres
+      environment:
+        POSTGRES_HOST: ${POSTGRES_HOST}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_DB: ${POSTGRES_DB}
+        PGDATA: "/var/lib/postgresql/data/pgdata"
+      volumes:
+        - "./db_data:/var/lib/postgresql/data"
+      networks:
+        - net
+      env_file:
+        - .env
+      ports:
+        - "5432:5432"
+
+volumes:
+  weather_static:
+  weather_media:

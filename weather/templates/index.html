@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}
+Прогноз погоды
+{% endblock %}
+
+{% block content %}
+
+
+<div style="margin-top: 100px;">
+
+    <h1 class="text-center">Посмотреть прогноз погоды в любом городе</h1>
+    <form action="" method="post" id="forecast">
+        {% csrf_token %}
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    {{ forecast_form }}
+                </div>
+            </div>
+            <div class="d-grid d-md-flex justify-content-md-center top-spacing">
+                <button class="btn btn-primary">Узнать погоду</button>
+            </div>
+    </form>
+
+    {% if days and days == 1 %}
+        <h2 class="text-center top-spacing-head">Прогноз на {{ days }} день в городе {{ city }}</h2>
+    {% elif days > 1 and days < 5 %}
+        <h2 class="text-center top-spacing-head">Прогноз на {{ days }} дня в городе {{ city }}</h2>
+    {% else %}
+        <h2 class="text-center top-spacing-head">Прогноз на {{ days }} дней в городе {{ city }}</h2>
+    {% endif %}
+
+
+    {% if city_info %}
+        <div class="сontainer">
+            <div class="row">
+                    {% for city in city_info %}
+                    <div class="col border border-success">
+                            <p>{{ city.weekday }} <br>
+                            {{ city.date }} <br>
+                            Температура: {{ city.temp }}°C <img src="https://yastatic.net/weather/i/icons/funky/dark/{{ city.icon }}.svg" width="50" alt="icon"> <br>
+                            Ощущается как: {{ city.feels_like }}°C <br>
+                            Ветер: {{ city.wind_speed }} м/с <br></p>
+                    </div>
+                {% endfor %} 
+            </div>
+        </div>
+                 
+    {% endif %}
+</div>
+{% endblock %}
